@@ -1,23 +1,24 @@
 package main
 
 import (
+	"log"
+	"time"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"log"
-	"time"
 )
 
 type Map map[string]any
 
-type Floor struct {
+type Item struct {
 	ID        int       `json:"id"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Content   string    `json:"content"`
 }
 
-type Floors []*Floor
+type Items []*Item
 
 type Hole struct {
 	ID     int  `json:"id"`

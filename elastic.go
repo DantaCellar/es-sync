@@ -5,16 +5,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v8"
-	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"io"
 	"log"
 	"strings"
+
+	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 )
 
 var ES *elasticsearch.Client
 
-const IndexName = "floors"
+const IndexNameFloor = "floors"
+const IndexNameTag = "tags"
+const IndexNameProject = "projects"
 
 func InitSearch() {
 
@@ -53,7 +56,7 @@ func InitSearch() {
 
 func CheckIndex() {
 
-	rsp, err := ES.Indices.Get([]string{IndexName})
+	rsp, err := ES.Indices.Get([]string{IndexNameFloor})
 	if err != nil {
 		log.Fatalf("Error getting response: %s", err)
 	}
@@ -91,7 +94,7 @@ func CheckIndex() {
 			log.Fatal(err)
 		}
 		req := esapi.IndicesCreateRequest{
-			Index: IndexName,
+			Index: IndexNameFloor,
 			Body:  buffer,
 		}
 
@@ -108,7 +111,7 @@ func CheckIndex() {
 
 func DeleteAllDocuments() {
 	req := esapi.DeleteByQueryRequest{
-		Index: []string{IndexName},
+		Index: []string{IndexNameFloor},
 		Body:  strings.NewReader(`{"query": {"match_all": {}}}`),
 	}
 	rsp, err := req.Do(context.Background(), ES)
@@ -125,7 +128,7 @@ var BulkBuffer *bytes.Buffer
 
 // BulkInsert run in single goroutine only, used when dump floors
 // see https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-func BulkInsert(floors Floors) error {
+func BulkInsert(floors Items, indexName string) error {
 	if BulkBuffer == nil {
 		BulkBuffer = bytes.NewBuffer(make([]byte, 0, 1024000)) // 100 KB buffer
 	}
@@ -150,7 +153,7 @@ func BulkInsert(floors Floors) error {
 
 	log.Printf("Preparing insert floor [%d, %d]\n", firstFloorID, lastFloorID)
 
-	res, err := ES.Bulk(BulkBuffer, ES.Bulk.WithIndex(IndexName))
+	res, err := ES.Bulk(BulkBuffer, ES.Bulk.WithIndex(IndexNameFloor))
 	if err != nil || res.IsError() {
 		return fmt.Errorf("error indexing floor [%d, %d]: %s", firstFloorID, lastFloorID, err)
 	}

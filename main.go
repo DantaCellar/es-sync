@@ -5,5 +5,7 @@ func main() {
 	InitSearch()
 	InitDB()
 
-	Dump()
+	DumpFloors(IndexNameFloor)
+	DumpProject()
+	DumpTag()
 }
