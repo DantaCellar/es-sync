@@ -47,7 +47,7 @@ func DumpFloors(indexName string) {
 
 func DumpTag() {
 	var items Items
-	err := DB.Table("tag").Select("id", "name", "updated_at").Scan(&items).Error
+	err := DB.Table("tag").Select("id", "name as content", "updated_at").Scan(&items).Error
 	if err != nil {
 		log.Fatalf("dump err: %s", err)
 		return
@@ -81,7 +81,7 @@ func DumpProject() {
 			if err != nil {
 				return nil
 			}
-			log.Printf("indexing %s projects", len(hole_projects))
+			log.Printf("indexing %d projects", len(hole_projects))
 			projectIDs := make([]int, len(hole_projects))
 			for i, hole_project := range hole_projects {
 				projectIDs[i] = hole_project.ProjectID
@@ -89,7 +89,7 @@ func DumpProject() {
 
 			err = tx.
 				Table("project").
-				Select("id", "CONCAT(content, description)", "updated_at").
+				Select("id", "CONCAT(name, content, description) as content", "updated_at").
 				Where("id in (?)", projectIDs).
 				Scan(&projects).Error
 			if err != nil {
