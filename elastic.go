@@ -151,14 +151,14 @@ func BulkInsert(floors Items, indexName string) error {
 		BulkBuffer.WriteByte('\n') // the final line of data must end with a newline character \n
 	}
 
-	log.Printf("Preparing insert floor [%d, %d]\n", firstFloorID, lastFloorID)
+	log.Printf("Preparing insert %s [%d, %d]\n", indexName, firstFloorID, lastFloorID)
 
-	res, err := ES.Bulk(BulkBuffer, ES.Bulk.WithIndex(IndexNameFloor))
+	res, err := ES.Bulk(BulkBuffer, ES.Bulk.WithIndex(indexName))
 	if err != nil || res.IsError() {
 		return fmt.Errorf("error indexing floor [%d, %d]: %s", firstFloorID, lastFloorID, err)
 	}
 	_ = res.Body.Close()
-	log.Printf("index floor [%d, %d] success\n", firstFloorID, lastFloorID)
+	log.Printf("index %s [%d, %d] success\n", indexName, firstFloorID, lastFloorID)
 
 	BulkBuffer.Reset()
 	return nil

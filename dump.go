@@ -81,7 +81,7 @@ func DumpProject() {
 			if err != nil {
 				return nil
 			}
-
+			log.Printf("indexing %s projects", len(hole_projects))
 			projectIDs := make([]int, len(hole_projects))
 			for i, hole_project := range hole_projects {
 				projectIDs[i] = hole_project.ProjectID
