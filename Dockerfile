@@ -8,6 +8,7 @@ RUN apk add --no-cache --virtual .build-deps \
         tzdata \
         gcc \
         g++ &&  \
+        go env -w GOPROXY=https://goproxy.cn,direct && \
     go mod download
 
 COPY . .
