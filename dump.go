@@ -47,7 +47,7 @@ func DumpFloors(indexName string) {
 
 func DumpTag() {
 	var items Items
-	err := DB.Table("tag").Select("id", "name", "updated_at").Where("deleted = 0").Scan(&items).Error
+	err := DB.Table("tag").Select("id", "name", "updated_at").Scan(&items).Error
 	if err != nil {
 		log.Fatalf("dump err: %s", err)
 		return
