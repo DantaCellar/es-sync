@@ -6,9 +6,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func Dump() {
+func DumpFloors(indexName string) {
 	var holes Holes
-	var floors Floors
+	var floors Items
 	result := DB.Where("hidden = false").
 		FindInBatches(&holes, 1000, func(tx *gorm.DB, batch int) error {
 			if len(holes) == 0 {
@@ -31,12 +31,69 @@ func Dump() {
 				return nil
 			}
 
-			err = BulkInsert(floors)
+			err = BulkInsert(floors, indexName)
 			if err != nil {
 				return err
 			}
 
 			log.Printf("insert holes [%d, %d]\n", holes[0].ID, holes[len(holes)-1].ID)
+			return nil
+		})
+
+	if result.Error != nil {
+		log.Fatalf("dump err: %s", result.Error)
+	}
+}
+
+func DumpTag() {
+	var items Items
+	err := DB.Table("tag").Select("id", "name", "updated_at").Where("deleted = 0").Scan(&items).Error
+	if err != nil {
+		log.Fatalf("dump err: %s", err)
+		return
+	}
+
+	if len(items) == 0 {
+		return
+	}
+
+	err = BulkInsert(items, IndexNameTag)
+	if err != nil {
+		log.Fatalf("dump err: %s", err)
+	}
+}
+
+func DumpProject() {
+	var holes Holes
+	var projects Items
+	result := DB.Where("hidden = false and approved = ?", true).
+		FindInBatches(&holes, 1000, func(tx *gorm.DB, batch int) error {
+			if len(holes) == 0 {
+				return nil
+			}
+			holeIDs := make([]int, len(holes))
+			for i, hole := range holes {
+				holeIDs[i] = hole.ID
+			}
+
+			err := tx.
+				Table("project").
+				Select("id", "CONCAT(content, description)", "updated_at").
+				Where("hole_id in (?)", holeIDs).
+				Scan(&projects).Error
+			if err != nil {
+				return err
+			}
+			if len(projects) == 0 {
+				return nil
+			}
+
+			err = BulkInsert(projects, IndexNameProject)
+			if err != nil {
+				return err
+			}
+
+			log.Printf("insert project holes, hole_id in [%d, %d]\n", holes[0].ID, holes[len(holes)-1].ID)
 			return nil
 		})
 

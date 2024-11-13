@@ -6,7 +6,7 @@ import (
 
 var Config struct {
 	DbUrl            string `env:"DB_URL,required"`
-	ElasticsearchUrl string `env:"ELASTICSEARCH_URL" envDefault:"http://localhost:9200"`
+	ElasticsearchUrl string `env:"ELASTICSEARCH_URL" envDefault:"http://localhost:9202"`
 }
 
 func InitConfig() {
