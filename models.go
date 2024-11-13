@@ -25,6 +25,11 @@ type Hole struct {
 	Hidden bool `json:"hidden"`
 }
 
+type HoleProject struct {
+	HoleID    int  `json:"hole_id"`
+	ProjectID int  `json:"project_id"`
+	IsMaster  bool `json:"is_master" gorm:"not null;default:true"`
+}
 type Holes []*Hole
 
 var DB *gorm.DB

@@ -66,6 +66,7 @@ func DumpTag() {
 func DumpProject() {
 	var holes Holes
 	var projects Items
+	var hole_projects []HoleProject
 	result := DB.Where("hidden = false and approved = ?", true).
 		FindInBatches(&holes, 1000, func(tx *gorm.DB, batch int) error {
 			if len(holes) == 0 {
@@ -76,10 +77,20 @@ func DumpProject() {
 				holeIDs[i] = hole.ID
 			}
 
-			err := tx.
+			err := tx.Table("hole_projects").Where("hole_id in (?)", holeIDs).Scan(&hole_projects).Error
+			if err != nil {
+				return nil
+			}
+
+			projectIDs := make([]int, len(hole_projects))
+			for i, hole_project := range hole_projects {
+				projectIDs[i] = hole_project.ProjectID
+			}
+
+			err = tx.
 				Table("project").
 				Select("id", "CONCAT(content, description)", "updated_at").
-				Where("hole_id in (?)", holeIDs).
+				Where("id in (?)", projectIDs).
 				Scan(&projects).Error
 			if err != nil {
 				return err
